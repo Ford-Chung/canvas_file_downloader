@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 from canvasapi import Canvas
 import wget, pdfkit, random, requests
 
@@ -19,7 +19,8 @@ def create_directory(directory_name):
         print(f"Directory '{directory_name}' created successfully.")
     except FileExistsError:
         print(f"Directory '{directory_name}' already exists. Renaming Directory")
-        directory_name+=random.randint(0, 1000)
+        directory_name+="_"+str(random.randint(0, 1000))
+        os.mkdir(directory_name)
     except PermissionError:
         print(f"Permission denied: Unable to create '{directory_name}'.")
     except Exception as e:
@@ -65,6 +66,8 @@ def course_download(index):
     file_directory = create_directory(file_directory) + "/"
     modules_directory = f"{directory_name}/modules"
     modules_directory = create_directory(modules_directory) + "/"
+    assignment_directory = f"{directory_name}/assignment"
+    assignment_directory = create_directory(assignment_directory) + "/"
     
     print("======================================================================================")
     
@@ -81,16 +84,19 @@ def course_download(index):
     print("Modules/Discussion/Pages/Assignment:")
     modules = course.get_modules()
     
+    os.chdir(modules_directory)
+    
     for idx, module in enumerate(modules):
         print("======================================================================================")
         items = module.get_module_items()
         module_name = module.name.translate({ord(i): None for i in '<>:\"/\\|?*'})
         print("\n\n" + module.name)
         
-        module_directory = f"{modules_directory}/{module_name}"
+        module_directory = f"{module_name}".replace(" ", "_")
         module_directory = create_directory(module_directory) + "/"
+        os.chdir(module_directory)
         
-        file_path = f"{module_directory}/{module_name}.txt"
+        file_path = f"{module_name}.txt"
         external_urls = ""
         payload['access_token'] = access_token
         
@@ -100,28 +106,41 @@ def course_download(index):
                 if item.type == "Page":
                     r = requests.get(item.url, params=payload)
                     data = r.json()
-                    pdfkit.from_string(data.get("body", ""), f"{module_directory}{item_title}.pdf")
-                elif item.type == "Assignment":
-                    assignment = course.get_assignment(item.content_id)
-                    if assignment.description != "":
-                        pdfkit.from_string(assignment.description, f"{module_directory}{item_title}.pdf")        
+                    print(f"{item_title.replace(" ", "_")}.pdf")
+                    
+                    pdfkit.from_string(data.get("body", ""), f"{item_title}.pdf")
                 elif item.type == "Discussion":
                     discussion = course.get_discussion_topic(item.content_id)
-                    pdfkit.from_string(discussion.message, f"{module_directory}{item_title}.pdf")
+                    pdfkit.from_string(discussion.message, f"{item_title}.pdf")
                 elif item.type == "ExternalUrl":
                     external_urls += f"[{item.title}] {item.external_url}\n"
                 elif item.type == "File":
                     file = course.get_file(item.content_id)
-                    file_path = module_directory + file.filename.translate({ord(i): None for i in '<>:\"/\\|?*'})
-                    wget.download(file.url, file_path)
+                    file_path2 = file.filename.translate({ord(i): None for i in '<>:\"/\\|?*'})
+                    wget.download(file.url, file_path2)
                 
                 print(item_title + " Saved")
-
+        
         if external_urls != "":
             external_file = open(file_path, 'a')
             external_file.write(external_urls)
+        
+        os.chdir("..")
         print("======================================================================================")
         
+    os.chdir("../assignment")
+    
+    print("\n\nAssignments")
+    assignments = course.get_assignments()
+    
+    for idx, assignment in enumerate(assignments):
+        print(f"[{idx}] {assignment} saved")
+        if assignment.description != "" and assignment.description != None:
+            pdfkit.from_string(assignment.description, f"{assignment.name.translate({ord(i): None for i in '<>:\"/\\|?*'})}.pdf")    
+    
+    os.chdir("../../")
+    
+    print("======================================================================================")
     print("Download Finished")
     
 
