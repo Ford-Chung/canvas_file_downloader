@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 2. create a .env file containing the
 
-    2.1 canvas access token (https://community.canvaslms.com/t5/Canvas-Basics-Guide/How-do-I-manage-API-access-tokens-in-my-user-account/ta-p/615312)
+    2.1 canvas access token (https://community.canvaslms.com/t5/Canvas-Basics-Guide/How-do-I-manage-API-access-tokens-in-my-user-account/ta-p/615312) (note: copy paste the link if its not working, maybe it doesn't allow redirection)
    
     2.2 base url ("canvas.infrastructure.com")
 ```
