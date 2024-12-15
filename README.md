@@ -5,6 +5,7 @@ This is a canvas course files downloader that aims to aid students backup their 
 1. Download Dependencies using this command
 ```
 pip install -r requirements.txt
+choco install wkhtmltopdf
 ```
 2. create a .env file containing the
 
