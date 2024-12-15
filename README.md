@@ -6,8 +6,10 @@ This is a canvas course files downloader that aims to aid students backup their 
 ```
 pip install -r requirements.txt
 ```
-2. create a .env file containing the 
+2. create a .env file containing the
+
     2.1 canvas access token (https://community.canvaslms.com/t5/Canvas-Basics-Guide/How-do-I-manage-API-access-tokens-in-my-user-account/ta-p/615312)
+   
     2.2 base url ("canvas.infrastructure.com")
 ```
 CANVAS_TOKEN=<insert token here>
